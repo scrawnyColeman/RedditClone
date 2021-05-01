@@ -1,12 +1,13 @@
 import { Post } from "./entities/Post";
 import { __prod__ } from "./constants";
 import path from "path";
+import { User } from "./entities/User";
 
 const postgresql = "postgresql" as const;
 const lireddit = "lireddit" as const;
 
 export default {
-  entities: [Post],
+  entities: [Post, User],
   dbName: lireddit,
   type: postgresql,
   debug: !__prod__,
