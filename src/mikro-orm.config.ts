@@ -9,6 +9,7 @@ const lireddit = "lireddit" as const;
 export default {
   entities: [Post, User],
   dbName: lireddit,
+  user: "Thomas",
   type: postgresql,
   debug: !__prod__,
   migrations: {
