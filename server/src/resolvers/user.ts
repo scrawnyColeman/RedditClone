@@ -10,6 +10,7 @@ import {
   Query,
   Resolver,
 } from "type-graphql";
+import { EntityManager } from "@mikro-orm/postgresql";
 import argon2 from "argon2";
 
 @InputType()
@@ -60,7 +61,7 @@ export class UserResolver {
         errors: [
           {
             field: "username",
-            message: "Length too short",
+            message: "Username length was too short",
           },
         ],
       };
@@ -70,25 +71,32 @@ export class UserResolver {
         errors: [
           {
             field: "password",
-            message: "Length too short",
+            message: "Password lengthn was too short",
           },
         ],
       };
     }
     const hashedPassword = await argon2.hash(options.password);
-    const user = em.create(User, {
-      username: options.username,
-      password: hashedPassword,
-    });
+    let user;
     try {
-      await em.persistAndFlush(user);
+      const result = await (em as EntityManager)
+        .createQueryBuilder(User)
+        .getKnexQuery()
+        .insert({
+          username: options.username,
+          password: hashedPassword,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returning("*");
+      user = result[0];
     } catch (err) {
       if (err.code === "23505" || err.detail.includes("already exists")) {
         return {
           errors: [
             {
               field: "username",
-              message: "Already exists",
+              message: "Username already exists",
             },
           ],
         };
